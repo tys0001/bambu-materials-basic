@@ -1,233 +1,917 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-Hant">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>2026 北海道冬季旅行報告</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
-    
-    <style>
-        body {
-            font-family: 'Inter', 'Noto Sans TC', sans-serif;
-            background-color: #FDFBF7;
-        }
-        .nav-tab { @apply px-4 py-2 text-sm font-medium text-gray-600 rounded-t-lg cursor-pointer whitespace-nowrap transition-colors duration-200; }
-        .nav-tab.active { @apply bg-white text-blue-700 border-b-2 border-blue-700; }
-        .nav-tab:not(.active):hover { @apply bg-gray-100 text-gray-800; }
-        .day-tab { @apply px-3 py-2 text-sm font-medium text-gray-700 bg-white rounded-md cursor-pointer shadow-sm transition-all duration-200 border border-gray-200; }
-        .day-tab.active { @apply bg-blue-600 text-white shadow-lg; }
-        .day-tab:not(.active):hover { @apply bg-gray-50 shadow-md; }
-        .content-section { @apply p-4 md:p-6 bg-white rounded-b-lg shadow-inner; }
-        .gear-item { @apply p-3 bg-gray-50 rounded-lg cursor-pointer transition-all duration-200 hover:bg-gray-100; }
-        .gear-item.packed { @apply line-through opacity-60 bg-green-50; }
-        .chart-container { position: relative; width: 100%; max-width: 300px; margin-left: auto; margin-right: auto; height: 300px; max-height: 300px; }
-        .timeline-item { @apply relative pl-8 sm:pl-10; }
-        .timeline-item:before { content: ''; @apply absolute left-1 top-2 w-4 h-4 bg-white border-2 border-blue-500 rounded-full z-10; }
-        .timeline-item:after { content: ''; @apply absolute left-3 top-2 w-0.5 h-full bg-blue-200; }
-        .timeline-item:last-child:after { display: none; }
-        .modal-overlay { @apply fixed inset-0 bg-black bg-opacity-60 z-40 hidden; }
-        .modal-container { @apply fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white w-11/12 md:max-w-lg p-6 rounded-lg shadow-xl z-50 hidden; max-height: 80vh; overflow-y: auto; }
-        .modal-close-btn { @apply absolute top-3 right-3 text-gray-500 hover:text-gray-800 text-2xl; }
-        .modal-content { @apply text-gray-700; }
-        .modal-content h3 { @apply text-lg font-semibold text-gray-800 mb-2; }
-        .modal-content p { @apply mb-2; }
-        .modal-content ul { @apply list-disc list-inside mb-2; }
-        .modal-content strong { @apply font-bold text-gray-900; }
-        .loader { @apply w-6 h-6 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin; }
-        .recommend-btn { @apply ml-2 px-2 py-1 bg-blue-100 text-blue-700 text-xs font-semibold rounded-full shadow-sm hover:bg-blue-200 transition-all duration-200; }
-    </style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>拓竹原廠材料建議表｜互動式</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* Simple subtle scrollbar */
+    ::-webkit-scrollbar{height:10px;width:10px}::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:999px}
+    .chip{display:inline-flex;align-items:center;gap:.35rem;border:1px solid rgb(226 232 240);border-radius:999px;padding:.25rem .6rem;font-size:.78rem}
+    .chip b{font-weight:600}
+    .kpi{border:1px solid rgb(226 232 240);border-radius:1rem;padding:.9rem}
+    .mono{font-variant-numeric:tabular-nums}
+  </style>
 </head>
-<body class="bg-gray-50">
-    <!-- 你的 HTML 主體內容完全照原樣保留 -->
-    <!-- 因篇幅極長，完整內容已貼上（略） -->
-    <!-- 下方為你的 script 含 Gemini 呼叫程式 -->
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const navTabs = document.querySelectorAll('.nav-tab');
-            const contentSections = document.querySelectorAll('.content-section');
-            const dayTabs = document.querySelectorAll('.day-tab');
-            const dayContents = document.querySelectorAll('.day-content');
-            const gearItems = document.querySelectorAll('.gear-item');
-            const recommendBtns = document.querySelectorAll('.recommend-btn');
-            const modalOverlay = document.getElementById('modal-overlay');
-            const modalContainer = document.getElementById('modal-container');
-            const modalContent = document.getElementById('modal-content');
-            const modalCloseBtn = document.getElementById('modal-close');
-            const aiForm = document.getElementById('ai-assistant-form');
-            const aiInput = document.getElementById('ai-prompt-input');
-            const aiSubmitBtn = document.getElementById('ai-submit-btn');
-            const aiLoading = document.getElementById('ai-loading');
-            const aiResultContainer = document.getElementById('ai-result-container');
-            const aiResultContent = document.getElementById('ai-result-content');
+<body class="bg-slate-50 text-slate-900">
+  <header class="sticky top-0 z-20 bg-white/80 backdrop-blur border-b border-slate-200">
+    <div class="max-w-7xl mx-auto px-4 py-4 flex flex-col gap-3">
+      <div class="flex items-start justify-between gap-4">
+        <div>
+          <h1 class="text-xl sm:text-2xl font-semibold tracking-tight">拓竹（Bambu Lab）原廠材料建議表｜互動式</h1>
+          <p class="text-sm text-slate-600 mt-1">快速查：溫度、AMS 相容性、噴嘴磨耗、建議噴嘴、用途。支援搜尋 / 篩選 / 比較 / 下載 CSV / 本機記憶。</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <button id="btnReset" class="px-3 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-sm">重置</button>
+          <button id="btnExport" class="px-3 py-2 rounded-xl bg-slate-900 text-white hover:bg-slate-800 text-sm">下載 CSV</button>
+        </div>
+      </div>
 
-            function showSection(sectionId) {
-                contentSections.forEach(section => {
-                    if (section.id === sectionId) {
-                        section.classList.remove('hidden');
-                    } else {
-                        section.classList.add('hidden');
-                    }
-                });
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-3">
+        <div class="lg:col-span-5">
+          <label class="text-xs text-slate-600">搜尋（材料名/系列/用途/備註）</label>
+          <input id="q" type="search" placeholder="例：螢光、木頭、卡扣、戶外、CF…" class="mt-1 w-full px-4 py-3 rounded-2xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-slate-300" />
+        </div>
+        <div class="lg:col-span-2">
+          <label class="text-xs text-slate-600">分類</label>
+          <select id="cat" class="mt-1 w-full px-4 py-3 rounded-2xl border border-slate-200 bg-white">
+            <option value="all">全部</option>
+            <option value="PLA">PLA</option>
+            <option value="PLA+">PLA 強化</option>
+            <option value="Engineering">工程料</option>
+            <option value="Flexible">軟料</option>
+            <option value="Nylon">尼龍/纖維</option>
+          </select>
+        </div>
+        <div class="lg:col-span-2">
+          <label class="text-xs text-slate-600">視圖</label>
+          <select id="view" class="mt-1 w-full px-4 py-3 rounded-2xl border border-slate-200 bg-white">
+            <option value="cards">卡片</option>
+            <option value="table">表格</option>
+          </select>
+        </div>
+        <div class="lg:col-span-3">
+          <label class="text-xs text-slate-600">排序</label>
+          <div class="mt-1 grid grid-cols-2 gap-2">
+            <select id="sortBy" class="w-full px-3 py-3 rounded-2xl border border-slate-200 bg-white">
+              <option value="name">名稱</option>
+              <option value="difficulty">難度</option>
+              <option value="abrasion">磨耗</option>
+              <option value="ams">AMS</option>
+            </select>
+            <select id="sortDir" class="w-full px-3 py-3 rounded-2xl border border-slate-200 bg-white">
+              <option value="asc">升冪</option>
+              <option value="desc">降冪</option>
+            </select>
+          </div>
+        </div>
+      </div>
 
-                navTabs.forEach(tab => {
-                    if (tab.id === `nav-${sectionId.split('-')[1]}`) {
-                        tab.classList.add('active');
-                    } else {
-                        tab.classList.remove('active');
-                    }
-                });
-            }
+      <div class="flex flex-wrap items-center gap-2 text-sm">
+        <label class="inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-slate-200 bg-white">
+          <input id="f_newbie" type="checkbox" class="accent-slate-900" />
+          <span>新手友善</span>
+        </label>
+        <label class="inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-slate-200 bg-white">
+          <input id="f_outdoor" type="checkbox" class="accent-slate-900" />
+          <span>戶外/耐候</span>
+        </label>
+        <label class="inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-slate-200 bg-white">
+          <input id="f_abrasive" type="checkbox" class="accent-slate-900" />
+          <span>有磨噴嘴風險（螢光/木/CF）</span>
+        </label>
+        <label class="inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-slate-200 bg-white">
+          <input id="f_ams_ok" type="checkbox" class="accent-slate-900" />
+          <span>可用 AMS</span>
+        </label>
+        <label class="inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-slate-200 bg-white">
+          <input id="f_ams_no" type="checkbox" class="accent-slate-900" />
+          <span>不建議/不可 AMS</span>
+        </label>
+      </div>
 
-            function showDay(dayId) {
-                dayContents.forEach(day => {
-                    if (day.id === dayId) {
-                        day.classList.remove('hidden');
-                    } else {
-                        day.classList.add('hidden');
-                    }
-                });
+      <div class="grid grid-cols-1 sm:grid-cols-4 gap-3 mt-2">
+        <div class="kpi bg-white">
+          <div class="text-xs text-slate-600">符合條件</div>
+          <div id="kpiCount" class="text-2xl font-semibold mono mt-1">0</div>
+        </div>
+        <div class="kpi bg-white">
+          <div class="text-xs text-slate-600">已加入比較</div>
+          <div id="kpiCompare" class="text-2xl font-semibold mono mt-1">0</div>
+        </div>
+        <div class="kpi bg-white">
+          <div class="text-xs text-slate-600">高磨耗材料</div>
+          <div id="kpiAbrasive" class="text-2xl font-semibold mono mt-1">0</div>
+        </div>
+        <div class="kpi bg-white">
+          <div class="text-xs text-slate-600">AMS 可用材料</div>
+          <div id="kpiAms" class="text-2xl font-semibold mono mt-1">0</div>
+        </div>
+      </div>
+    </div>
+  </header>
 
-                dayTabs.forEach(tab => {
-                    if (tab.dataset.day === dayId) {
-                        tab.classList.add('active');
-                    } else {
-                        tab.classList.remove('active');
-                    }
-                });
-            }
+  <main class="max-w-7xl mx-auto px-4 py-6">
+    <section id="alerts" class="hidden mb-4"></section>
 
-            navTabs.forEach(tab => {
-                tab.addEventListener('click', () => {
-                    const targetSection = `content-${tab.id.split('-')[1]}`;
-                    showSection(targetSection);
-                });
-            });
+    <section id="comparePanel" class="hidden mb-6">
+      <div class="bg-white border border-slate-200 rounded-2xl p-4">
+        <div class="flex items-center justify-between gap-3">
+          <div>
+            <h2 class="text-lg font-semibold">材料比較</h2>
+            <p class="text-sm text-slate-600">最多同時比較 4 個。勾選卡片「加入比較」。</p>
+          </div>
+          <button id="btnClearCompare" class="px-3 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-sm">清空比較</button>
+        </div>
+        <div class="overflow-auto mt-4">
+          <table class="min-w-[900px] w-full text-sm">
+            <thead class="text-left text-slate-600">
+              <tr class="border-b border-slate-200">
+                <th class="py-2 pr-3">項目</th>
+                <th class="py-2 pr-3" id="cmp0"></th>
+                <th class="py-2 pr-3" id="cmp1"></th>
+                <th class="py-2 pr-3" id="cmp2"></th>
+                <th class="py-2 pr-3" id="cmp3"></th>
+              </tr>
+            </thead>
+            <tbody id="cmpBody" class="align-top"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
 
-            dayTabs.forEach(tab => {
-                tab.addEventListener('click', () => {
-                    showDay(tab.dataset.day);
-                });
-            });
+    <section id="cards" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4"></section>
 
-            gearItems.forEach(item => {
-                item.addEventListener('click', () => {
-                    item.classList.toggle('packed');
-                });
-            });
+    <section id="table" class="hidden">
+      <div class="bg-white border border-slate-200 rounded-2xl overflow-hidden">
+        <div class="overflow-auto">
+          <table class="min-w-[1100px] w-full text-sm">
+            <thead class="bg-slate-50 text-left text-slate-600">
+              <tr class="border-b border-slate-200">
+                <th class="p-3">材料</th>
+                <th class="p-3">分類</th>
+                <th class="p-3">難度</th>
+                <th class="p-3">噴嘴/熱床</th>
+                <th class="p-3">AMS</th>
+                <th class="p-3">磨耗</th>
+                <th class="p-3">建議噴嘴</th>
+                <th class="p-3">適合用途</th>
+              </tr>
+            </thead>
+            <tbody id="tableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
 
-            recommendBtns.forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const prompt = btn.dataset.prompt;
-                    handleRestaurantRequest(prompt);
-                });
-            });
+    <footer class="mt-10 text-sm text-slate-500">
+      <div class="bg-white border border-slate-200 rounded-2xl p-4">
+        <p class="font-medium text-slate-700">小提醒</p>
+        <ul class="list-disc pl-5 mt-2 space-y-1">
+          <li>螢光 / 木頭 / 碳纖（CF）屬於「磨耗型」材料，長期建議使用 <b>Hardened Steel Nozzle</b>（或至少 0.6mm）。</li>
+          <li>TPU 類軟料通常不建議走 AMS / AMS Lite。</li>
+          <li>ABS/ASA/PA 類材料對環境（封箱、乾燥、通風）更敏感。</li>
+        </ul>
+      </div>
+    </footer>
+  </main>
 
-            aiForm.addEventListener('submit', (e) => {
-                e.preventDefault();
-                handleAiAssistantSubmit();
-            });
+<script>
+  // -------------------------------
+  // Data model
+  // -------------------------------
+  const DIFF = {
+    1: '★☆☆☆☆',
+    2: '★★☆☆☆',
+    3: '★★★☆☆',
+    4: '★★★★☆',
+    5: '★★★★★'
+  };
 
-            function showModal(title, content) {
-                modalContent.innerHTML = `<h3>${title}</h3>${content}`;
-                modalOverlay.classList.remove('hidden');
-                modalContainer.classList.remove('hidden');
-            }
+  const AMS_LABEL = {
+    ok: '可用',
+    caution: '可用但不建議',
+    no: '不可/不建議'
+  };
 
-            function hideModal() {
-                modalOverlay.classList.add('hidden');
-                modalContainer.classList.add('hidden');
-            }
+  const ABR = {
+    0: '無',
+    1: '低',
+    2: '中',
+    3: '高',
+    4: '很高',
+    5: '極高'
+  };
 
-            modalOverlay.addEventListener('click', hideModal);
-            modalCloseBtn.addEventListener('click', hideModal);
+  /**
+   * Notes:
+   * - 這份資料以「拓竹原廠材料類型」+ 實務建議整理，溫度採常見穩定範圍。
+   * - 不同顏料/批次會有差異；你可以在資料區直接改數值。
+   */
+  const MATERIALS = [
+    {
+      id: 'pla_basic',
+      name: 'PLA Basic（標準 PLA）',
+      family: 'PLA',
+      category: 'PLA',
+      difficulty: 1,
+      nozzleC: '190–220（建議 205）',
+      bedC: '35–55',
+      ams: 'ok',
+      abrasion: 0,
+      nozzleRec: '0.4 不鏽鋼即可',
+      finish: '平滑、尺寸準、翹曲低',
+      strengths: ['穩定', '好黏底', '好調校'],
+      bestFor: ['日常零件', '外殼', '治具', '展示件'],
+      avoidFor: ['高溫', '戶外長曝曬', '高受力結構'],
+      newbie: true,
+      outdoor: false,
+      tags: ['新手', '穩定', '量產']
+    },
+    {
+      id: 'pla_matte',
+      name: 'PLA Matte（消光 PLA）',
+      family: 'PLA',
+      category: 'PLA',
+      difficulty: 1,
+      nozzleC: '200–220',
+      bedC: '35–55',
+      ams: 'ok',
+      abrasion: 0,
+      nozzleRec: '0.4 不鏽鋼即可',
+      finish: '消光、遮層線、低反光',
+      strengths: ['外觀好看', '細節清楚'],
+      bestFor: ['展示模型', '外觀件', '道具'],
+      avoidFor: ['高受力', '高溫'],
+      newbie: true,
+      outdoor: false,
+      tags: ['消光', '外觀']
+    },
+    {
+      id: 'pla_silk',
+      name: 'PLA Silk（絲綢 PLA）',
+      family: 'PLA',
+      category: 'PLA',
+      difficulty: 2,
+      nozzleC: '210–230（偏高）',
+      bedC: '40–60',
+      ams: 'ok',
+      abrasion: 0,
+      nozzleRec: '0.4 不鏽鋼即可（建議降速）',
+      finish: '高光澤、金屬感',
+      strengths: ['超好看', '金屬質感'],
+      bestFor: ['裝飾件', '雕像', '展示品'],
+      avoidFor: ['耐衝擊', '卡扣', '結構件'],
+      newbie: false,
+      outdoor: false,
+      tags: ['高光', '裝飾']
+    },
+    {
+      id: 'pla_fluo',
+      name: 'PLA Fluorescent（螢光 PLA）',
+      family: 'PLA',
+      category: 'PLA',
+      difficulty: 2,
+      nozzleC: '210–230',
+      bedC: '40–55',
+      ams: 'ok',
+      abrasion: 3,
+      nozzleRec: '0.6 或 Hardened（建議）',
+      finish: '高可視度、亮色',
+      strengths: ['警示效果', '可視性強'],
+      bestFor: ['標示牌', '安全提示', '玩具'],
+      avoidFor: ['長期用 0.4 不鏽鋼噴嘴'],
+      newbie: true,
+      outdoor: false,
+      tags: ['螢光', '磨耗', '警示']
+    },
+    {
+      id: 'pla_wood',
+      name: 'PLA Wood（木頭 PLA）',
+      family: 'PLA',
+      category: 'PLA',
+      difficulty: 3,
+      nozzleC: '200–220',
+      bedC: '40–55',
+      ams: 'caution',
+      abrasion: 3,
+      nozzleRec: '0.6 強烈建議（降低堵頭風險）',
+      finish: '木質顆粒感，可打磨/染色',
+      strengths: ['工藝感', '後處理友善'],
+      bestFor: ['裝飾', '工藝品', '擬木模型'],
+      avoidFor: ['細小孔洞', '長時間不乾燥', 'AMS 長距離送料'],
+      newbie: false,
+      outdoor: false,
+      tags: ['木粉', '易堵', '磨耗']
+    },
+    {
+      id: 'pla_tough',
+      name: 'PLA Tough（超韌 PLA）',
+      family: 'PLA+',
+      category: 'PLA+',
+      difficulty: 2,
+      nozzleC: '210–230',
+      bedC: '40–60',
+      ams: 'ok',
+      abrasion: 0,
+      nozzleRec: '0.4 不鏽鋼即可',
+      finish: '外觀接近 Basic，韌性更好',
+      strengths: ['抗衝擊', '較不脆裂', '卡扣友善'],
+      bestFor: ['卡扣件', '玩具', '耐摔零件'],
+      avoidFor: ['高溫', '戶外長曝曬'],
+      newbie: true,
+      outdoor: false,
+      tags: ['超韌', '卡扣']
+    },
+    {
+      id: 'pla_plus',
+      name: 'PLA+（增強型 PLA）',
+      family: 'PLA+',
+      category: 'PLA+',
+      difficulty: 1,
+      nozzleC: '200–220',
+      bedC: '40–55',
+      ams: 'ok',
+      abrasion: 0,
+      nozzleRec: '0.4 不鏽鋼即可',
+      finish: '接近 Basic，但更韌/更穩（視配方）',
+      strengths: ['量產穩', '韌性提升'],
+      bestFor: ['日常功能件', '量產', '外殼'],
+      avoidFor: ['高溫', '戶外'],
+      newbie: true,
+      outdoor: false,
+      tags: ['增強', '量產']
+    },
+    {
+      id: 'pla_cf',
+      name: 'PLA-CF（碳纖強化 PLA）',
+      family: 'PLA+',
+      category: 'PLA+',
+      difficulty: 3,
+      nozzleC: '210–230',
+      bedC: '45–60',
+      ams: 'caution',
+      abrasion: 4,
+      nozzleRec: 'Hardened Nozzle 必須（0.4/0.6 皆可，0.6 更順）',
+      finish: '消光、細砂感、質感很高',
+      strengths: ['剛性高', '低翹曲', '外觀高級'],
+      bestFor: ['外觀結構件', '定位治具', '支撐骨架（非彈性）'],
+      avoidFor: ['活動件', '彈性需求', '需要耐摔'],
+      newbie: false,
+      outdoor: false,
+      tags: ['CF', '磨耗', '消光']
+    },
+    {
+      id: 'petg',
+      name: 'PETG',
+      family: 'Engineering',
+      category: 'Engineering',
+      difficulty: 2,
+      nozzleC: '230–250',
+      bedC: '70–80',
+      ams: 'ok',
+      abrasion: 0,
+      nozzleRec: '0.4 不鏽鋼即可（注意拉絲）',
+      finish: '韌性佳，耐候',
+      strengths: ['戶外', '抗衝擊', '耐化學'],
+      bestFor: ['戶外件', '容器', '功能件'],
+      avoidFor: ['追求極致外觀（需調拉絲）'],
+      newbie: true,
+      outdoor: true,
+      tags: ['耐候', '韌性']
+    },
+    {
+      id: 'abs',
+      name: 'ABS',
+      family: 'Engineering',
+      category: 'Engineering',
+      difficulty: 4,
+      nozzleC: '240–270',
+      bedC: '90–100',
+      ams: 'ok',
+      abrasion: 0,
+      nozzleRec: '0.4 不鏽鋼即可（封箱/通風）',
+      finish: '耐熱、耐衝擊，但易翹曲',
+      strengths: ['耐熱', '機構件'],
+      bestFor: ['機構件', '耐熱零件'],
+      avoidFor: ['無封箱環境', '室內無通風'],
+      newbie: false,
+      outdoor: true,
+      tags: ['耐熱', '封箱']
+    },
+    {
+      id: 'asa',
+      name: 'ASA',
+      family: 'Engineering',
+      category: 'Engineering',
+      difficulty: 4,
+      nozzleC: '240–270',
+      bedC: '90–100',
+      ams: 'ok',
+      abrasion: 0,
+      nozzleRec: '0.4 不鏽鋼即可（封箱）',
+      finish: '抗 UV、戶外耐候',
+      strengths: ['戶外首選', '抗 UV'],
+      bestFor: ['戶外零件', '車用/日曬環境'],
+      avoidFor: ['無封箱', '無通風'],
+      newbie: false,
+      outdoor: true,
+      tags: ['戶外', '抗UV']
+    },
+    {
+      id: 'tpu95a',
+      name: 'TPU 95A（彈性軟料）',
+      family: 'Flexible',
+      category: 'Flexible',
+      difficulty: 3,
+      nozzleC: '220–240',
+      bedC: '35–50',
+      ams: 'no',
+      abrasion: 0,
+      nozzleRec: '0.4 不鏽鋼即可（低速）',
+      finish: '柔軟、彈性',
+      strengths: ['耐摔', '防滑', '吸震'],
+      bestFor: ['保護套', '避震', '止滑'],
+      avoidFor: ['高速列印', 'AMS 送料'],
+      newbie: false,
+      outdoor: true,
+      tags: ['彈性', '慢速']
+    },
+    {
+      id: 'pa_cf',
+      name: 'PA-CF / PA6-CF（尼龍碳纖）',
+      family: 'Nylon',
+      category: 'Nylon',
+      difficulty: 5,
+      nozzleC: '260–290',
+      bedC: '90–100',
+      ams: 'caution',
+      abrasion: 5,
+      nozzleRec: 'Hardened Nozzle 必須 + 乾燥箱',
+      finish: '強度/剛性極高，但吸濕',
+      strengths: ['工業級強度', '耐熱', '尺寸穩'],
+      bestFor: ['治具', '結構件', '功能件'],
+      avoidFor: ['未乾燥', '新手環境'],
+      newbie: false,
+      outdoor: true,
+      tags: ['尼龍', 'CF', '乾燥']
+    }
+  ];
 
-            function showLoading(element) { element.classList.remove('hidden'); }
-            function hideLoading(element) { element.classList.add('hidden'); }
-            
-            function parseMarkdown(text) { return text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\*(.*?)\*/g, '<em>$1</em>').replace(/\n/g, '<br>'); }
+  // -------------------------------
+  // State + persistence
+  // -------------------------------
+  const LS_KEY = 'bambu_material_guide_v1';
 
-            async function retryWithBackoff(apiCall, maxRetries = 3) {
-                let attempt = 0;
-                while (attempt < maxRetries) {
-                    try {
-                        return await apiCall();
-                    } catch (error) {
-                        attempt++;
-                        if (attempt >= maxRetries) throw error;
-                        const delay = Math.pow(2, attempt) * 1000 + Math.random() * 1000;
-                        await new Promise(resolve => setTimeout(resolve, delay));
-                    }
-                }
-            }
+  const defaultState = () => ({
+    q: '',
+    cat: 'all',
+    view: 'cards',
+    sortBy: 'name',
+    sortDir: 'asc',
+    filters: {
+      newbie: false,
+      outdoor: false,
+      abrasive: false,
+      amsOk: false,
+      amsNo: false,
+    },
+    compare: []
+  });
 
-            async function callGeminiAPI(userQuery, systemPrompt, useGrounding = true) {
-                const apiKey = "";
-                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
-                const payload = { contents: [{ parts: [{ text: userQuery }] }], systemInstruction: { parts: [{ text: systemPrompt }] } };
-                if (useGrounding) payload.tools = [{ "google_search": {} }];
+  let state = loadState();
 
-                const apiCall = async () => {
-                    const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-                    if (!response.ok) throw new Error(`API call failed: ${response.status}`);
-                    return response.json();
-                };
+  function loadState(){
+    try{
+      const raw = localStorage.getItem(LS_KEY);
+      if(!raw) return defaultState();
+      const parsed = JSON.parse(raw);
+      return { ...defaultState(), ...parsed, filters: { ...defaultState().filters, ...(parsed.filters||{}) } };
+    }catch(e){
+      return defaultState();
+    }
+  }
 
-                try {
-                    const result = await retryWithBackoff(apiCall);
-                    const candidate = result.candidates?.[0];
-                    if (candidate?.content?.parts?.[0]?.text) {
-                        let text = parseMarkdown(candidate.content.parts[0].text);
-                        return text;
-                    } else return "<p>抱歉，我無法取得回應。</p>";
-                } catch (error) {
-                    return `<p>錯誤：${error.message}</p>`;
-                }
-            }
+  function saveState(){
+    localStorage.setItem(LS_KEY, JSON.stringify(state));
+  }
 
-            async function handleRestaurantRequest(prompt) {
-                showModal("✨ 餐廳推薦", '<div class="flex justify-center items-center"><div class="loader"></div><p class="ml-2">AI 正在搜尋最佳推薦...</p></div>');
-                const systemPrompt = "你是一位北海道旅遊專家...";
-                const responseHtml = await callGeminiAPI(prompt, systemPrompt, true);
-                showModal("✨ 餐廳推薦", responseHtml);
-            }
+  // -------------------------------
+  // Helpers
+  // -------------------------------
+  function norm(s){
+    return (s||'').toString().toLowerCase();
+  }
 
-            async function handleAiAssistantSubmit() {
-                const userQuery = aiInput.value.trim();
-                if (!userQuery) return;
-                aiSubmitBtn.disabled = true;
-                aiSubmitBtn.innerHTML = '處理中...';
-                showLoading(aiLoading);
-                aiResultContainer.classList.add('hidden');
+  function matchQuery(m, q){
+    if(!q) return true;
+    const hay = [
+      m.name, m.family, m.category, m.finish,
+      (m.strengths||[]).join(' '),
+      (m.bestFor||[]).join(' '),
+      (m.avoidFor||[]).join(' '),
+      (m.tags||[]).join(' '),
+      m.nozzleRec
+    ].join('｜');
+    return norm(hay).includes(norm(q));
+  }
 
-                const systemPrompt = "你是一位北海道旅遊專家...";
-                const responseHtml = await callGeminiAPI(userQuery, systemPrompt, true);
+  function amsBool(m){
+    return m.ams === 'ok';
+  }
 
-                aiResultContent.innerHTML = responseHtml;
-                aiResultContainer.classList.remove('hidden');
-                hideLoading(aiLoading);
-                aiSubmitBtn.disabled = false;
-                aiSubmitBtn.innerHTML = '送出';
-                aiInput.value = '';
-            }
+  function abrasiveBool(m){
+    return m.abrasion >= 3;
+  }
 
-            function renderMemberChart() {
-                const ctx = document.getElementById('memberChart').getContext('2d');
-                new Chart(ctx, {
-                    type: 'doughnut',
-                    data: {
-                        labels: ['成人 (35歲)', '兒童 (7歲 & 5歲)'],
-                        datasets: [{ data: [2, 2], backgroundColor: ['rgba(59,130,246,0.7)','rgba(16,185,129,0.7)'], borderColor: ['rgba(59,130,246,1)','rgba(16,185,129,1)'], borderWidth: 1 }]
-                    },
-                    options: { responsive: true, maintainAspectRatio: false, cutout: '60%' }
-                });
-            }
+  function sortKey(m, key){
+    switch(key){
+      case 'difficulty': return m.difficulty;
+      case 'abrasion': return m.abrasion;
+      case 'ams': return (m.ams === 'ok') ? 2 : (m.ams === 'caution' ? 1 : 0);
+      case 'name':
+      default:
+        return m.name;
+    }
+  }
 
-            showSection('content-overview');
-            showDay('day-1');
-            renderMemberChart();
-        });
-    </script>
+  function applyFilters(list){
+    const f = state.filters;
+    return list.filter(m => {
+      if(!matchQuery(m, state.q)) return false;
+      if(state.cat !== 'all' && m.category !== state.cat) return false;
+      if(f.newbie && !m.newbie) return false;
+      if(f.outdoor && !m.outdoor) return false;
+      if(f.abrasive && !abrasiveBool(m)) return false;
+      if(f.amsOk && m.ams !== 'ok') return false;
+      if(f.amsNo && m.ams === 'ok') return false;
+      return true;
+    });
+  }
+
+  function applySort(list){
+    const dir = state.sortDir === 'asc' ? 1 : -1;
+    const key = state.sortBy;
+    return [...list].sort((a,b)=>{
+      const ka = sortKey(a,key);
+      const kb = sortKey(b,key);
+      if(typeof ka === 'number' && typeof kb === 'number') return (ka-kb)*dir;
+      return String(ka).localeCompare(String(kb), 'zh-Hant')*dir;
+    });
+  }
+
+  function badge(label, tone){
+    const base = 'inline-flex items-center px-2.5 py-1 rounded-full text-xs border';
+    const map = {
+      good: 'bg-emerald-50 border-emerald-200 text-emerald-800',
+      warn: 'bg-amber-50 border-amber-200 text-amber-800',
+      bad: 'bg-rose-50 border-rose-200 text-rose-800',
+      neutral: 'bg-slate-50 border-slate-200 text-slate-700'
+    };
+    return `<span class="${base} ${map[tone]||map.neutral}">${label}</span>`;
+  }
+
+  function renderStars(n){
+    return DIFF[n] || '—';
+  }
+
+  function renderAms(m){
+    if(m.ams === 'ok') return badge('AMS：可用', 'good');
+    if(m.ams === 'caution') return badge('AMS：可用但不建議', 'warn');
+    return badge('AMS：不可/不建議', 'bad');
+  }
+
+  function renderAbr(m){
+    const tone = m.abrasion >= 4 ? 'bad' : (m.abrasion >= 3 ? 'warn' : 'neutral');
+    return badge(`磨耗：${ABR[m.abrasion]}`, tone);
+  }
+
+  function compareSet(){
+    return new Set(state.compare);
+  }
+
+  function toggleCompare(id){
+    const set = compareSet();
+    if(set.has(id)) set.delete(id);
+    else {
+      if(set.size >= 4) {
+        showAlert('比較最多 4 個，請先移除一些再加入。', 'warn');
+        return;
+      }
+      set.add(id);
+    }
+    state.compare = [...set];
+    saveState();
+    render();
+  }
+
+  function clearCompare(){
+    state.compare = [];
+    saveState();
+    render();
+  }
+
+  function showAlert(msg, tone='neutral'){
+    const el = document.getElementById('alerts');
+    el.classList.remove('hidden');
+    const cls = tone==='warn' ? 'bg-amber-50 border-amber-200 text-amber-900'
+      : tone==='bad' ? 'bg-rose-50 border-rose-200 text-rose-900'
+      : 'bg-slate-50 border-slate-200 text-slate-800';
+    el.innerHTML = `
+      <div class="border ${cls} rounded-2xl p-4 flex items-start justify-between gap-3">
+        <div class="text-sm">${msg}</div>
+        <button class="text-sm underline" id="btnDismiss">關閉</button>
+      </div>`;
+    document.getElementById('btnDismiss').onclick = () => {
+      el.classList.add('hidden');
+      el.innerHTML = '';
+    };
+  }
+
+  // -------------------------------
+  // Rendering
+  // -------------------------------
+  function render(){
+    // sync inputs
+    document.getElementById('q').value = state.q;
+    document.getElementById('cat').value = state.cat;
+    document.getElementById('view').value = state.view;
+    document.getElementById('sortBy').value = state.sortBy;
+    document.getElementById('sortDir').value = state.sortDir;
+
+    document.getElementById('f_newbie').checked = state.filters.newbie;
+    document.getElementById('f_outdoor').checked = state.filters.outdoor;
+    document.getElementById('f_abrasive').checked = state.filters.abrasive;
+    document.getElementById('f_ams_ok').checked = state.filters.amsOk;
+    document.getElementById('f_ams_no').checked = state.filters.amsNo;
+
+    // compute list
+    const filtered = applySort(applyFilters(MATERIALS));
+
+    // KPIs
+    document.getElementById('kpiCount').textContent = filtered.length;
+    document.getElementById('kpiCompare').textContent = state.compare.length;
+    document.getElementById('kpiAbrasive').textContent = filtered.filter(abrasiveBool).length;
+    document.getElementById('kpiAms').textContent = filtered.filter(m=>m.ams==='ok').length;
+
+    // view switch
+    const cards = document.getElementById('cards');
+    const table = document.getElementById('table');
+    if(state.view === 'cards'){
+      cards.classList.remove('hidden');
+      table.classList.add('hidden');
+      renderCards(filtered);
+    } else {
+      cards.classList.add('hidden');
+      table.classList.remove('hidden');
+      renderTable(filtered);
+    }
+
+    // compare panel
+    renderCompare();
+  }
+
+  function renderCards(list){
+    const cards = document.getElementById('cards');
+    const set = compareSet();
+
+    if(list.length === 0){
+      cards.innerHTML = `
+        <div class="md:col-span-2 xl:col-span-3">
+          <div class="bg-white border border-slate-200 rounded-2xl p-6 text-slate-700">
+            <div class="text-lg font-semibold">沒有符合的材料</div>
+            <div class="text-sm text-slate-600 mt-2">試試看清掉一些篩選或換關鍵字。</div>
+          </div>
+        </div>`;
+      return;
+    }
+
+    cards.innerHTML = list.map(m => {
+      const cmp = set.has(m.id);
+      const abrasive = abrasiveBool(m);
+      const needsHardened = m.abrasion >= 4;
+
+      const primary = m.category === 'PLA' ? 'bg-white'
+        : m.category === 'PLA+' ? 'bg-white'
+        : 'bg-white';
+
+      return `
+        <article class="${primary} border border-slate-200 rounded-2xl p-4 shadow-sm hover:shadow-md transition">
+          <div class="flex items-start justify-between gap-3">
+            <div>
+              <h3 class="text-base font-semibold leading-snug">${m.name}</h3>
+              <div class="text-xs text-slate-500 mt-1">分類：${m.category}／系列：${m.family}</div>
+            </div>
+            <label class="text-xs select-none inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-slate-200 bg-white">
+              <input type="checkbox" class="accent-slate-900" ${cmp ? 'checked' : ''} data-cmp="${m.id}" />
+              <span>加入比較</span>
+            </label>
+          </div>
+
+          <div class="flex flex-wrap gap-2 mt-3">
+            ${renderAms(m)}
+            ${renderAbr(m)}
+            ${m.newbie ? badge('新手友善', 'good') : ''}
+            ${m.outdoor ? badge('戶外/耐候', 'good') : ''}
+            ${needsHardened ? badge('建議硬化噴嘴', 'bad') : (abrasive ? badge('建議 0.6mm', 'warn') : '')}
+          </div>
+
+          <div class="mt-4 grid grid-cols-2 gap-3 text-sm">
+            <div class="rounded-xl bg-slate-50 border border-slate-200 p-3">
+              <div class="text-xs text-slate-600">列印難度</div>
+              <div class="font-medium mt-1">${renderStars(m.difficulty)}</div>
+            </div>
+            <div class="rounded-xl bg-slate-50 border border-slate-200 p-3">
+              <div class="text-xs text-slate-600">噴嘴/熱床</div>
+              <div class="font-medium mt-1">${m.nozzleC}°C / ${m.bedC}°C</div>
+            </div>
+          </div>
+
+          <div class="mt-4">
+            <div class="text-xs text-slate-600">建議噴嘴</div>
+            <div class="text-sm font-medium mt-1">${m.nozzleRec}</div>
+          </div>
+
+          <div class="mt-4">
+            <div class="text-xs text-slate-600">特性/外觀</div>
+            <div class="text-sm mt-1">${m.finish}</div>
+          </div>
+
+          <div class="mt-4">
+            <div class="text-xs text-slate-600">適合用途</div>
+            <div class="mt-2 flex flex-wrap gap-2">
+              ${(m.bestFor||[]).slice(0,6).map(x=>`<span class="chip"><b>✓</b>${x}</span>`).join('')}
+            </div>
+          </div>
+
+          <div class="mt-4">
+            <div class="text-xs text-slate-600">不建議</div>
+            <div class="mt-2 flex flex-wrap gap-2">
+              ${(m.avoidFor||[]).slice(0,6).map(x=>`<span class="chip"><b>!</b>${x}</span>`).join('')}
+            </div>
+          </div>
+
+          <div class="mt-4 flex flex-wrap gap-2">
+            ${(m.tags||[]).map(t=>badge(`#${t}`,'neutral')).join('')}
+          </div>
+        </article>
+      `;
+    }).join('');
+
+    // bind compare toggles
+    cards.querySelectorAll('input[data-cmp]').forEach(cb => {
+      cb.onchange = (e) => toggleCompare(e.target.getAttribute('data-cmp'));
+    });
+  }
+
+  function renderTable(list){
+    const tbody = document.getElementById('tableBody');
+    const set = compareSet();
+
+    tbody.innerHTML = list.map(m => {
+      const cmp = set.has(m.id);
+      const amsText = AMS_LABEL[m.ams] || '—';
+      const abrasionText = ABR[m.abrasion] || '—';
+      return `
+        <tr class="border-b border-slate-100 hover:bg-slate-50">
+          <td class="p-3">
+            <div class="font-medium">${m.name}</div>
+            <label class="text-xs text-slate-600 inline-flex items-center gap-2 mt-2">
+              <input type="checkbox" class="accent-slate-900" ${cmp ? 'checked' : ''} data-cmp="${m.id}" />
+              <span>加入比較</span>
+            </label>
+          </td>
+          <td class="p-3">${m.category}</td>
+          <td class="p-3">${renderStars(m.difficulty)}</td>
+          <td class="p-3">${m.nozzleC}°C / ${m.bedC}°C</td>
+          <td class="p-3">${amsText}</td>
+          <td class="p-3">${abrasionText}</td>
+          <td class="p-3">${m.nozzleRec}</td>
+          <td class="p-3">${(m.bestFor||[]).slice(0,4).join('、')}</td>
+        </tr>
+      `;
+    }).join('');
+
+    tbody.querySelectorAll('input[data-cmp]').forEach(cb => {
+      cb.onchange = (e) => toggleCompare(e.target.getAttribute('data-cmp'));
+    });
+  }
+
+  function renderCompare(){
+    const panel = document.getElementById('comparePanel');
+    const set = new Set(state.compare);
+    const picked = MATERIALS.filter(m => set.has(m.id));
+
+    if(picked.length === 0){
+      panel.classList.add('hidden');
+      return;
+    }
+    panel.classList.remove('hidden');
+
+    // header names
+    for(let i=0;i<4;i++){
+      const th = document.getElementById('cmp'+i);
+      th.textContent = picked[i] ? picked[i].name.replace(/（.*?）/g,'') : '';
+    }
+
+    const rows = [
+      ['分類', m => `${m.category}／${m.family}`],
+      ['列印難度', m => renderStars(m.difficulty)],
+      ['噴嘴/熱床', m => `${m.nozzleC}°C / ${m.bedC}°C`],
+      ['AMS', m => AMS_LABEL[m.ams] || '—'],
+      ['磨耗', m => ABR[m.abrasion] || '—'],
+      ['建議噴嘴', m => m.nozzleRec],
+      ['特性/外觀', m => m.finish],
+      ['適合用途', m => (m.bestFor||[]).slice(0,6).join('、')],
+      ['不建議', m => (m.avoidFor||[]).slice(0,6).join('、')]
+    ];
+
+    const body = document.getElementById('cmpBody');
+    body.innerHTML = rows.map(([label, fn]) => {
+      const cols = [0,1,2,3].map(i => picked[i] ? fn(picked[i]) : '');
+      return `
+        <tr class="border-b border-slate-100">
+          <td class="py-3 pr-3 font-medium text-slate-700">${label}</td>
+          <td class="py-3 pr-3">${cols[0]}</td>
+          <td class="py-3 pr-3">${cols[1]}</td>
+          <td class="py-3 pr-3">${cols[2]}</td>
+          <td class="py-3 pr-3">${cols[3]}</td>
+        </tr>
+      `;
+    }).join('');
+
+    document.getElementById('btnClearCompare').onclick = clearCompare;
+  }
+
+  // -------------------------------
+  // CSV export
+  // -------------------------------
+  function exportCSV(){
+    const filtered = applySort(applyFilters(MATERIALS));
+    const headers = ['材料','分類','系列','難度','噴嘴(°C)','熱床(°C)','AMS','磨耗','建議噴嘴','特性','適合用途','不建議','標籤'];
+    const rows = filtered.map(m => [
+      m.name,
+      m.category,
+      m.family,
+      m.difficulty,
+      m.nozzleC,
+      m.bedC,
+      AMS_LABEL[m.ams] || m.ams,
+      ABR[m.abrasion] || m.abrasion,
+      m.nozzleRec,
+      m.finish,
+      (m.bestFor||[]).join('、'),
+      (m.avoidFor||[]).join('、'),
+      (m.tags||[]).join(',')
+    ]);
+
+    const csv = [headers, ...rows]
+      .map(r => r.map(x => `"${String(x ?? '').replaceAll('"','""')}"`).join(','))
+      .join('\n');
+
+    const blob = new Blob(["\ufeff" + csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'bambu_material_guide.csv';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  }
+
+  // -------------------------------
+  // Wire UI
+  // -------------------------------
+  function wire(){
+    const $ = id => document.getElementById(id);
+
+    $('q').addEventListener('input', (e)=>{ state.q = e.target.value; saveState(); render(); });
+    $('cat').addEventListener('change', (e)=>{ state.cat = e.target.value; saveState(); render(); });
+    $('view').addEventListener('change', (e)=>{ state.view = e.target.value; saveState(); render(); });
+    $('sortBy').addEventListener('change', (e)=>{ state.sortBy = e.target.value; saveState(); render(); });
+    $('sortDir').addEventListener('change', (e)=>{ state.sortDir = e.target.value; saveState(); render(); });
+
+    $('f_newbie').addEventListener('change', (e)=>{ state.filters.newbie = e.target.checked; saveState(); render(); });
+    $('f_outdoor').addEventListener('change', (e)=>{ state.filters.outdoor = e.target.checked; saveState(); render(); });
+    $('f_abrasive').addEventListener('change', (e)=>{ state.filters.abrasive = e.target.checked; saveState(); render(); });
+    $('f_ams_ok').addEventListener('change', (e)=>{ state.filters.amsOk = e.target.checked; saveState(); render(); });
+    $('f_ams_no').addEventListener('change', (e)=>{ state.filters.amsNo = e.target.checked; saveState(); render(); });
+
+    $('btnExport').onclick = exportCSV;
+
+    $('btnReset').onclick = () => {
+      state = defaultState();
+      saveState();
+      showAlert('已重置篩選與比較。', 'neutral');
+      render();
+    };
+  }
+
+  // init
+  wire();
+  render();
+</script>
 </body>
 </html>
